@@ -2,7 +2,7 @@
 import os
 import numpy as np
 import scipy as sp
-from scipy.io import netcdf
+from scipy.io import netcdf_file
 import pytropd.metrics as pyt
 import matplotlib.pyplot as plt
 from matplotlib import rc
@@ -16,7 +16,7 @@ y2 = 2016
 time = np.linspace(y1,y2+1,12*(y2-y1+1)+1)
 time = (time[:-1] + time[1:]) / 2
 red_color     = (1,0.3,0.4)
-orange_color  = (255/256,140/256,0) 
+orange_color  = (255/256,140/256,0)
 blue_color    = (0,0.447,0.741)
 purple_color  = (0.494,0.184,0.556)
 green_color   = (0.466,0.674,0.188)
@@ -28,7 +28,7 @@ dirname = os.path.dirname(__file__)
 
 ## 1) PSI -- Streamfunction zero crossing
 #read meridional velocity V(time,lat,lev), latitude and level
-f_V = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/va.nc'),'r')
+f_V = netcdf_file(os.path.join(dirname, 'ValidationData/va.nc'),'r')
 V = f_V.variables['va'][:].copy()
 #Change axes of V to be [time, lat, lev]
 V = np.transpose(V, (2,1,0))
@@ -84,7 +84,7 @@ for j in range(np.shape(V)[0]):
 
 plt.figure(2)
 plt.plot(time,Phi_psi_nh,linewidth=2,color=green_color,\
-    label='$\Psi_{500}$ zero crossing from monthly mean V that qualify uncertainty criterion') 
+    label='$\Psi_{500}$ zero crossing from monthly mean V that qualify uncertainty criterion')
 plt.plot(time[np.isnan(Phi_psi_nh_L)], Phi_psi_nh[np.isnan(Phi_psi_nh_L)],marker='*',linestyle='None',markersize=10,color=red_color,\
     label='$\Psi_{500}$ zero crossing from monthly mean V that fail uncertainty criterion')
 plt.title(r'NH $\Psi_{500}$')
@@ -96,8 +96,8 @@ plt.show()
 
 ## 2) TPB -- Tropopause break latitude
 #read temperature T(time,lat,lev), potential height [m] Z(time,lat,lev), latitude and level
-f_T = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ta.nc'),'r')
-f_Z = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/zg.nc'),'r')
+f_T = netcdf_file(os.path.join(dirname, 'ValidationData/ta.nc'),'r')
+f_Z = netcdf_file(os.path.join(dirname, 'ValidationData/zg.nc'),'r')
 T = f_T.variables['ta'][:].copy()
 Z = f_Z.variables['zg'][:].copy()
 #Change axes of T and Z to be [time, lat, lev]
@@ -114,7 +114,7 @@ Phi_tpb_nh = np.zeros((np.shape(T)[0],)) # latitude of monthly NH tropopause bre
 Phi_tpb_sh = np.zeros((np.shape(T)[0],)) # latitude of monthly SH tropopause break
 
 for j in range(np.shape(T)[0]):
-  ''' Default method = 'max_gradient'. Latitude of maximal difference between 
+  ''' Default method = 'max_gradient'. Latitude of maximal difference between
   potential temperature at the tropopause level and the potential temperature at the surface
   '''
   Phi_tpb_sh[j], Phi_tpb_nh[j] = pyt.TropD_Metric_TPB(T[j,:,:], lat, lev)
@@ -133,7 +133,7 @@ Phi_tpbT_sh_ANN = np.zeros((np.shape(T_ANN)[0],)) # latitude of SH tropopause br
 for j in range(np.shape(T_ANN)[0]):
   # (Default) latitude of maximal poleward gradient
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = pyt.TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='max_gradient')
-  # latitude of maximal difference in potential temperature between the tropopase and surface 
+  # latitude of maximal difference in potential temperature between the tropopase and surface
   Phi_tpbT_sh_ANN[j], Phi_tpbT_nh_ANN[j] = pyt.TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='max_potemp')
   # CutoffHeight = 15km marks the height of the tropopause break
   Phi_tpbZ_sh_ANN[j], Phi_tpbZ_nh_ANN[j] = pyt.TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='cutoff',\
@@ -169,8 +169,8 @@ plt.show()
 #Note: OLR is assumed to be positive upwards and in units of W/m^2
 # read zonal mean monthly TOA outgoing longwave radiation olr(time,lat)
 # read zonal mean monthly clear-sky TOA outgoing longwave radiation olrcs(time,lat)
-f_olr = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/rlnt.nc'),'r')
-f_olrcs = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/rlntcs.nc'),'r')
+f_olr = netcdf_file(os.path.join(dirname, 'ValidationData/rlnt.nc'),'r')
+f_olrcs = netcdf_file(os.path.join(dirname, 'ValidationData/rlntcs.nc'),'r')
 olr = -f_olr.variables['rlnt'][:].copy()
 olrcs = -f_olrcs.variables['rlntcs'][:].copy()
 lat = f_olr.variables['lat'][:].copy()
@@ -185,7 +185,7 @@ olrcs = np.transpose(olrcs, (1,0))
 olr_ANN = pytf.TropD_Calculate_Mon2Season(olr, season=np.arange(12))
 olrcs_ANN = pytf.TropD_Calculate_Mon2Season(olrcs, season=np.arange(12))
 
-Phi_olr_nh = np.zeros((np.shape(olr)[0],))            # latitude of NH olr metric                                    
+Phi_olr_nh = np.zeros((np.shape(olr)[0],))            # latitude of NH olr metric
 Phi_olr_sh = np.zeros((np.shape(olr)[0],))            # latitude of SH olr metric
 
 Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))    # latitude of NH olr metric from annual mean olr
@@ -257,7 +257,7 @@ plt.show()
 
 ## 4) STJ -- Subtropical Jet (STJ) latitude
 #read zonal wind U(time,lat,lev), latitude and level
-f_U = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
+f_U = netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
 U = f_U.variables['ua'][:].copy()
 lat = f_U.variables['lat'][:].copy()
 lev = f_U.variables['lev'][:].copy()
@@ -297,7 +297,7 @@ plt.show()
 
 ## 5) EDJ -- Eddy Driven Jet (EDJ) latitude
 #read zonal wind U(time,lat,lev), latitude and level
-f_U = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
+f_U = netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
 U = f_U.variables['ua'][:].copy()
 lat = f_U.variables['lat'][:].copy()
 lev = f_U.variables['lev'][:].copy()
@@ -316,7 +316,7 @@ for j in range(np.shape(U)[0]):
 # Calculate EDJ latitude from annual mean
 U_ANN = pytf.TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
-Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of NH EDJ from annual mean U  
+Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of NH EDJ from annual mean U
 Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of SH EDJ from annual mean U
 
 for j in range(np.shape(U_ANN)[0]):
@@ -343,15 +343,15 @@ plt.show()
 
 ## 6) PE -- Precipitation minus evaporation subtropical zero crossing latitude
 # read zonal mean monthly precipitation pr(time,lat)
-f_pr = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/pr.nc'),'r')
+f_pr = netcdf_file(os.path.join(dirname, 'ValidationData/pr.nc'),'r')
 # read zonal mean monthly evaporation drived from surface latent heat flux hfls(time,lat)
-f_er = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/hfls.nc'),'r')
+f_er = netcdf_file(os.path.join(dirname, 'ValidationData/hfls.nc'),'r')
 #Latent heat of vaporization
 L = 2510400.0
 
 pr = f_pr.variables['pr'][:].copy()
 er = -f_er.variables['hfls'][:].copy()/L
-PE = pr - er 
+PE = pr - er
 
 lat = f_pr.variables['lat'][:].copy()
 f_pr.close()
@@ -397,9 +397,9 @@ plt.show()
 
 ## 7) UAS -- Zonal surface wind subtropical zero crossing latitude
 #read zonal wind U(time,lat,lev), latitude and level
-f_U = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
+f_U = netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
 #read zonal mean surface wind U(time,lat)
-f_uas = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/uas.nc'),'r')
+f_uas = netcdf_file(os.path.join(dirname, 'ValidationData/uas.nc'),'r')
 U = f_U.variables['ua'][:].copy()
 uas = f_uas.variables['uas'][:].copy()
 lat = f_U.variables['lat'][:].copy()
@@ -414,7 +414,7 @@ uas = np.transpose(uas, (1,0))
 uas_ANN = pytf.TropD_Calculate_Mon2Season(uas, season=np.arange(12))
 U_ANN = pytf.TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
-Phi_uas_nh = np.zeros((np.shape(uas)[0],))         # latitude of NH surface zonal wind metric                        
+Phi_uas_nh = np.zeros((np.shape(uas)[0],))         # latitude of NH surface zonal wind metric
 Phi_uas_sh = np.zeros((np.shape(uas)[0],))         # latitude of SH surface zonal wind metric
 
 Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],)) # latitude of NH surface zonal wind metric from annual mean surface zonal wind
@@ -453,7 +453,7 @@ plt.show()
 
 ## 8) PSL -- Sea-level Pressure Maximum
 # read sea-level pressure ps(time,lat) and latitude
-f_ps = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/psl.nc'),'r')
+f_ps = netcdf_file(os.path.join(dirname, 'ValidationData/psl.nc'),'r')
 ps = f_ps.variables['psl'][:].copy()
 lat = f_ps.variables['lat'][:].copy()
 f_ps.close()
@@ -494,7 +494,7 @@ plt.show()
 ## 9) Compare annual mean metrics
 #Psi500
 #read meridional velocity V(time,lat,lev), latitude and level
-f_V = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/va.nc'),'r')
+f_V = netcdf_file(os.path.join(dirname, 'ValidationData/va.nc'),'r')
 V = f_V.variables['va'][:].copy()
 lat = f_V.variables['lat'][:].copy()
 lev = f_V.variables['lev'][:].copy()
@@ -513,7 +513,7 @@ for j in range(np.shape(V_ANN)[0]):
 
 # Tropopause break
 #read meridional temperature T(time,lat,lev), latitude and level
-f_T = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ta.nc'),'r')
+f_T = netcdf_file(os.path.join(dirname, 'ValidationData/ta.nc'),'r')
 T = f_T.variables['ta'][:].copy()
 f_T.close()
 
@@ -530,7 +530,7 @@ for j in range(np.shape(T_ANN)[0]):
 
 # Surface pressure max
 # read sea-level pressure ps(time,lat) and latitude
-f_ps = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/psl.nc'),'r')
+f_ps = netcdf_file(os.path.join(dirname, 'ValidationData/psl.nc'),'r')
 ps = f_ps.variables['psl'][:].copy()
 f_ps.close()
 
@@ -547,7 +547,7 @@ for j in range(np.shape(ps_ANN)[0]):
 
 # Eddy driven jet
 #read zonal wind U(time,lat,lev), latitude and level
-f_U = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
+f_U = netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
 U = f_U.variables['ua'][:].copy()
 f_U.close()
 
@@ -571,7 +571,7 @@ for j in range(np.shape(U_ANN)[0]):
 
 # OLR
 # read zonal mean monthly TOA outgoing longwave radiation olr(time,lat)
-f_olr = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/rlnt.nc'),'r')
+f_olr = netcdf_file(os.path.join(dirname, 'ValidationData/rlnt.nc'),'r')
 olr = -f_olr.variables['rlnt'][:].copy()
 f_olr.close()
 
@@ -588,7 +588,7 @@ for j in range(np.shape(olr_ANN)[0]):
 
 # P minus E
 # read zonal mean monthly precipitation pr(time,lat)
-f_pr = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/pr.nc'),'r')
+f_pr = netcdf_file(os.path.join(dirname, 'ValidationData/pr.nc'),'r')
 pr = f_pr.variables['pr'][:].copy()
 f_pr.close()
 
@@ -596,7 +596,7 @@ f_pr.close()
 L = 2510400.0
 
 # read zonal mean monthly evaporation drived from surface latent heat flux hfls(time,lat)
-f_er = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/hfls.nc'),'r')
+f_er = netcdf_file(os.path.join(dirname, 'ValidationData/hfls.nc'),'r')
 er = -f_er.variables['hfls'][:].copy()/L
 f_er.close()
 
@@ -616,7 +616,7 @@ for j in range(np.shape(PE_ANN)[0]):
 
 # Surface winds
 #read zonal mean surface wind U(time,lat)
-f_uas = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/uas.nc'),'r')
+f_uas = netcdf_file(os.path.join(dirname, 'ValidationData/uas.nc'),'r')
 uas = f_uas.variables['uas'][:].copy()
 f_uas.close()
 
@@ -680,7 +680,7 @@ plt.show()
 # Check calculations with precalculated values from file within roundoff error
 #Psi500
 #read meridional velocity V(time,lat,lev), latitude and level
-f_V = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/va.nc'),'r')
+f_V = netcdf_file(os.path.join(dirname, 'ValidationData/va.nc'),'r')
 V = f_V.variables['va'][:].copy()
 lat = f_V.variables['lat'][:].copy()
 lev = f_V.variables['lev'][:].copy()
@@ -705,7 +705,7 @@ for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = pyt.TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
 
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSI_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSI_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['PSI_NH'][:].copy()
 Phi_sh = f_Phi.variables['PSI_SH'][:].copy()
 f_Phi.close()
@@ -716,7 +716,7 @@ if not (np.std(Phi_nh - Phi_psi_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_psi_sh_A
 else:
   print('OK. Annual-mean Validation and calculated PSI metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSI.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSI.nc'),'r')
 Phi_nh = f_Phi.variables['PSI_NH'][:].copy()
 Phi_sh = f_Phi.variables['PSI_SH'][:].copy()
 f_Phi.close()
@@ -728,7 +728,7 @@ else:
 
 # Tropopause break
 #read temperature T(time,lat,lev), latitude and level
-f_T = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ta.nc'),'r')
+f_T = netcdf_file(os.path.join(dirname, 'ValidationData/ta.nc'),'r')
 T = f_T.variables['ta'][:].copy()
 f_T.close()
 
@@ -749,7 +749,7 @@ for j in range(np.shape(T)[0]):
 for j in range(np.shape(T_ANN)[0]):
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = pyt.TropD_Metric_TPB(T_ANN[j,:,:], lat, lev)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/TPB_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/TPB_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['TPB_NH'][:].copy()
 Phi_sh = f_Phi.variables['TPB_SH'][:].copy()
 f_Phi.close()
@@ -759,7 +759,7 @@ if not (np.std(Phi_nh - Phi_tpb_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_tpb_sh_A
 else:
   print('OK. Annual-mean Validation and calculated TPB metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/TPB.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/TPB.nc'),'r')
 Phi_nh = f_Phi.variables['TPB_NH'][:].copy()
 Phi_sh = f_Phi.variables['TPB_SH'][:].copy()
 f_Phi.close()
@@ -771,7 +771,7 @@ else:
 
 # Surface pressure max (Invalid in NH)
 # read sea-level pressure ps(time,lat) and latitude
-f_ps = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/psl.nc'),'r')
+f_ps = netcdf_file(os.path.join(dirname, 'ValidationData/psl.nc'),'r')
 ps = f_ps.variables['psl'][:].copy()
 f_ps.close()
 
@@ -804,7 +804,7 @@ for j in range(np.shape(ps_MAM)[0]):
 for j in range(np.shape(ps_SON)[0]):
   Phi_ps_sh_SON[j], Phi_ps_nh_SON[j] = pyt.TropD_Metric_PSL(ps_SON[j,:], lat)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_DJF.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_DJF.nc'),'r')
 Phi_nh = f_Phi.variables['PSL_NH'][:].copy()
 Phi_sh = f_Phi.variables['PSL_SH'][:].copy()
 f_Phi.close()
@@ -814,7 +814,7 @@ if not (np.std(Phi_sh - Phi_ps_sh_DJF) < 1e-10) or not (np.std(Phi_nh - Phi_ps_n
 else:
   print('OK. DJF Validation and calculated PSL metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_JJA.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_JJA.nc'),'r')
 Phi_nh = f_Phi.variables['PSL_NH'][:].copy()
 Phi_sh = f_Phi.variables['PSL_SH'][:].copy()
 f_Phi.close()
@@ -824,7 +824,7 @@ if not (np.std(Phi_sh - Phi_ps_sh_JJA) < 1e-10) or not (np.std(Phi_nh - Phi_ps_n
 else:
   print('OK. JJA Validation and calculated PSL metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_MAM.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_MAM.nc'),'r')
 Phi_nh = f_Phi.variables['PSL_NH'][:].copy()
 Phi_sh = f_Phi.variables['PSL_SH'][:].copy()
 f_Phi.close()
@@ -834,7 +834,7 @@ if not (np.std(Phi_sh - Phi_ps_sh_MAM) < 1e-10) or not (np.std(Phi_nh - Phi_ps_n
 else:
   print('OK. MAM Validation and calculated PSL metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_SON.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PSL_SON.nc'),'r')
 Phi_nh = f_Phi.variables['PSL_NH'][:].copy()
 Phi_sh = f_Phi.variables['PSL_SH'][:].copy()
 f_Phi.close()
@@ -846,7 +846,7 @@ else:
 
 # Eddy driven jet
 #read zonal wind U(time,lat,lev), latitude and level
-f_U = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
+f_U = netcdf_file(os.path.join(dirname, 'ValidationData/ua.nc'),'r')
 U = f_U.variables['ua'][:].copy()
 f_U.close()
 
@@ -867,7 +867,7 @@ for j in range(np.shape(U)[0]):
 for j in range(np.shape(U_ANN)[0]):
   Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = pyt.TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/EDJ_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/EDJ_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['EDJ_NH'][:].copy()
 Phi_sh = f_Phi.variables['EDJ_SH'][:].copy()
 f_Phi.close()
@@ -877,7 +877,7 @@ if not (np.std(Phi_nh - Phi_edj_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_edj_sh_A
 else:
   print('OK. Annual-mean Validation and calculated EDJ metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/EDJ.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/EDJ.nc'),'r')
 Phi_nh = f_Phi.variables['EDJ_NH'][:].copy()
 Phi_sh = f_Phi.variables['EDJ_SH'][:].copy()
 f_Phi.close()
@@ -899,7 +899,7 @@ for j in range(np.shape(U)[0]):
 for j in range(np.shape(U_ANN)[0]):
   Phi_stj_sh_ANN[j], Phi_stj_nh_ANN[j] = pyt.TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/STJ_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/STJ_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['STJ_NH'][:].copy()
 Phi_sh = f_Phi.variables['STJ_SH'][:].copy()
 f_Phi.close()
@@ -909,7 +909,7 @@ if not (np.std(Phi_nh - Phi_stj_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_stj_sh_A
 else:
   print('OK. Annual-mean Validation and calculated STJ metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/STJ.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/STJ.nc'),'r')
 Phi_nh = f_Phi.variables['STJ_NH'][:].copy()
 Phi_sh = f_Phi.variables['STJ_SH'][:].copy()
 f_Phi.close()
@@ -921,7 +921,7 @@ else:
 
 # OLR
 # read zonal mean monthly TOA outgoing longwave radiation olr(time,lat)
-f_olr = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/rlnt.nc'),'r')
+f_olr = netcdf_file(os.path.join(dirname, 'ValidationData/rlnt.nc'),'r')
 olr = -f_olr.variables['rlnt'][:].copy()
 f_olr.close()
 
@@ -941,7 +941,7 @@ for j in range(np.shape(olr)[0]):
 for j in range(np.shape(olr_ANN)[0]):
   Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = pyt.TropD_Metric_OLR(olr_ANN[j,:], lat)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/OLR_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/OLR_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['OLR_NH'][:].copy()
 Phi_sh = f_Phi.variables['OLR_SH'][:].copy()
 f_Phi.close()
@@ -951,7 +951,7 @@ if not (np.std(Phi_nh - Phi_olr_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_olr_sh_A
 else:
   print('OK. Annual-mean Validation and calculated OLR metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/OLR.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/OLR.nc'),'r')
 Phi_nh = f_Phi.variables['OLR_NH'][:].copy()
 Phi_sh = f_Phi.variables['OLR_SH'][:].copy()
 f_Phi.close()
@@ -963,7 +963,7 @@ else:
 
 # P minus E
 # read zonal mean monthly precipitation pr(time,lat)
-f_pr = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/pr.nc'),'r')
+f_pr = netcdf_file(os.path.join(dirname, 'ValidationData/pr.nc'),'r')
 pr = f_pr.variables['pr'][:].copy()
 f_pr.close()
 
@@ -971,7 +971,7 @@ f_pr.close()
 L = 2510400.0
 
 # read zonal mean monthly evaporation drived from surface latent heat flux hfls(time,lat)
-f_er = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/hfls.nc'),'r')
+f_er = netcdf_file(os.path.join(dirname, 'ValidationData/hfls.nc'),'r')
 er = -f_er.variables['hfls'][:].copy()/L
 f_er.close()
 
@@ -994,7 +994,7 @@ for j in range(np.shape(PE)[0]):
 for j in range(np.shape(PE_ANN)[0]):
   Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = pyt.TropD_Metric_PE(PE_ANN[j,:], lat)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PE_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PE_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['PE_NH'][:].copy()
 Phi_sh = f_Phi.variables['PE_SH'][:].copy()
 f_Phi.close()
@@ -1004,7 +1004,7 @@ if not (np.std(Phi_nh - Phi_pe_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_pe_sh_ANN
 else:
   print('OK. Annual-mean Validation and calculated P-E metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/PE.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/PE.nc'),'r')
 Phi_nh = f_Phi.variables['PE_NH'][:].copy()
 Phi_sh = f_Phi.variables['PE_SH'][:].copy()
 f_Phi.close()
@@ -1016,7 +1016,7 @@ else:
 
 # Surface winds
 #read zonal mean surface wind U(time,lat)
-f_uas = netcdf.netcdf_file(os.path.join(dirname, 'ValidationData/uas.nc'),'r')
+f_uas = netcdf_file(os.path.join(dirname, 'ValidationData/uas.nc'),'r')
 uas = f_uas.variables['uas'][:].copy()
 f_uas.close()
 
@@ -1037,7 +1037,7 @@ for j in range(np.shape(uas)[0]):
 for j in range(np.shape(uas_ANN)[0]):
   Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = pyt.TropD_Metric_UAS(uas_ANN[j,:], lat)
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/UAS_ANN.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/UAS_ANN.nc'),'r')
 Phi_nh = f_Phi.variables['UAS_NH'][:].copy()
 Phi_sh = f_Phi.variables['UAS_SH'][:].copy()
 f_Phi.close()
@@ -1047,7 +1047,7 @@ if not (np.std(Phi_nh - Phi_uas_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_uas_sh_A
 else:
   print('OK. Annual-mean Validation and calculated UAS metrics are the same!')
 
-f_Phi = netcdf.netcdf_file(os.path.join(dirname, 'ValidationMetrics/UAS.nc'),'r')
+f_Phi = netcdf_file(os.path.join(dirname, 'ValidationMetrics/UAS.nc'),'r')
 Phi_nh = f_Phi.variables['UAS_NH'][:].copy()
 Phi_sh = f_Phi.variables['UAS_SH'][:].copy()
 f_Phi.close()
