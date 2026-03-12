@@ -3,6 +3,7 @@
 from __future__ import division
 import numpy as np
 from . import functions as f
+from scipy.integrate import cumulative_trapezoid
 
 def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='peak', n=0, n_fit=1):
   '''TropD Eddy Driven Jet (EDJ) metric
@@ -354,19 +355,19 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', lat_uncertainty=0):
 
   elif method == 'Psi_300_700':
     # Use Psi averaged between the 300 and 700 hPa level
-    P = np.trapz(Psi[:,(lev <= 700) & (lev >= 300)] * COS[:,(lev <= 700) & (lev >= 300)],\
+    P = np.trapezoid(Psi[:,(lev <= 700) & (lev >= 300)] * COS[:,(lev <= 700) & (lev >= 300)],\
                   lev[(lev <= 700) & (lev >= 300)]*100, axis=1)
 
   elif method == 'Psi_500_Int':
     # Use integrated Psi from p=0 to level mearest to 500 hPa
-    PPsi_temp = sp.integrate.cumtrapz(Psi*COS, lev, axis=1)
+    PPsi_temp = cumulative_trapezoid(Psi*COS, lev, axis=1)
     PPsi = np.zeros(np.shape(Psi))
     PPsi[:,1:] = PPsi_temp
     P = PPsi[:,f.find_nearest(lev, 500)]
      
   elif method == 'Psi_Int':
     # Use vertical mean of Psi 
-    P = np.trapz(Psi*COS, lev, axis=1)
+    P = np.trapezoid(Psi*COS, lev, axis=1)
   
   else:
     print('TropD_Metric_PSI: ERROR : Unrecognized method ', method)
@@ -517,7 +518,7 @@ def TropD_Metric_STJ(U, lat, lev, method='adjusted_peak', n=0):
 
     # Pressure weighted vertical mean of U minus near surface U
     if len(lev_int) > 1:
-      u = np.trapz(U[:, (lev >= 100) & (lev <= 400)], lev_int, axis=1) \
+        u = np.trapezoid(U[:, (lev >= 100) & (lev <= 400)], lev_int, axis=1) \
           / (lev_int[-1] - lev_int[0]) - U[:,idx_850]
 
     else:
@@ -526,7 +527,7 @@ def TropD_Metric_STJ(U, lat, lev, method='adjusted_peak', n=0):
   elif (method == 'core_peak' or method == 'core_max'):
     # Pressure weighted vertical mean of U
     if len(lev_int) > 1:
-      u = np.trapz(U[:, (lev >= 100) & (lev <= 400)], lev_int, axis=1) \
+        u = np.trapezoid(U[:, (lev >= 100) & (lev <= 400)], lev_int, axis=1) \
           / (lev_int[-1] - lev_int[0])
 
     else:
