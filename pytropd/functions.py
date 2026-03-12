@@ -60,7 +60,7 @@ def TropD_Calculate_MaxLat(F,lat,n=int(6)):
   F = F - np.min(F)
   F = F / np.max(F) 
 
-  Ymax = np.trapz((F**n)*lat, lat) / np.trapz(F ** n, lat)
+  Ymax = np.trapezoid((F**n)*lat, lat) / np.trapezoid(F ** n, lat)
 
   return Ymax
 
@@ -126,7 +126,7 @@ def TropD_Calculate_StreamFunction(V, lat, lev):
   COS = np.repeat(np.cos(lat*np.pi/180), len(lev), axis=0).reshape(len(lat),len(lev))
 
   psi = (EarthRadius/EarthGrav) * 2 * np.pi \
-       * sp.integrate.cumtrapz(B * V * COS, lev*100, axis=1, initial=0) 
+       * integrate.cumulative_trapezoid(B * V * COS, lev*100, axis=1, initial=0) 
   
   return psi
 
